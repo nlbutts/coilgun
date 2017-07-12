@@ -1,0 +1,39 @@
+#Chopper Circuit
+V1 10 3 SINE(0 576 60)
+R1 10 2 16
+D1 2 5 dio2
+D2 0 2 dio2
+D3 0 3 dio2
+D4 3 5 dio2
+
+M1 5 7 0 MOSFET
+.model MOSFET NMOS(KP=.001)
+.model Si4410DY VDMOS(Rd=3m Rs=3m Vto=2.6 Kp=60
++ Cgdmax=1.9n Cgdmin=50p Cgs=3.1n Cjo=1n
++ Is=5.5p Rb=5.7m)
+C1 5 0 5900u
+
+VS 7 0 PULSE(0 5 0.25 0 0 .00015 .002)
+
+
+.tran 1e-5 .5 UIC
+.MEAS TRAN peak MAX I(L1)
+
+* 1N4004 - 1A 400V General Purpose Rectifier
+* -----------------------------------------------
+.MODEL  1N4004  D
++ IS = 3.699E-09
++ RS = 1.756E-02
++ N = 1.774
++ XTI = 3.0
++ EG = 1.110
++ CJO = 1.732E-11
++ M = 0.3353
++ VJ = 0.3905
++ FC = 0.5
++ ISR = 6.665E-10
++ NR = 2.103
++ BV = 600
++ IBV = 1.0E-03
+
+.model dio2 D

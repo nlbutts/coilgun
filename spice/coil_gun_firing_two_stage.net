@@ -1,0 +1,39 @@
+#Coil gun design
+C1 1 0 5900u ic=450
+#C1 1 0 11800u ic=450
+#C1 1 0 2950u ic=800
+Rb 1 0 500k
+
+SCR1 1 2 on1 0 MySwitch
+L1 2 3 797u
+RL1 3 0 0.498
+
+SCR2 1 4 on2 0 MySwitch
+L2 4 5 797u
+RL2 5 0 0.498
+
+#D1 0 2 1N4004
+.model MySwitch SW(Ron=.1 Roff=1Meg Vt=1 Vh=0 Lser=10n Vser=.6)
+
+VS1 on1 0 PULSE(0 10 0 0 0 .003)
+VS2 on2 0 PULSE(0 10 .003 0 0 .003)
+
+.tran .001 0.01 UIC
+.MEAS TRAN peak MAX I(L1)
+
+* 1N4004 - 1A 400V General Purpose Rectifier
+* -----------------------------------------------
+.MODEL  1N4004  D
++ IS = 3.699E-09
++ RS = 1.756E-02
++ N = 1.774
++ XTI = 3.0
++ EG = 1.110
++ CJO = 1.732E-11
++ M = 0.3353
++ VJ = 0.3905
++ FC = 0.5
++ ISR = 6.665E-10
++ NR = 2.103
++ BV = 600
++ IBV = 1.0E-03

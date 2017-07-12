@@ -1,0 +1,19 @@
+RC time delay circuit
+v1 1 0 SIN(0 120 60)
+Rs 1 2 100
+d1 2 3 1N4004
+#c1 2 0 4.7u ic=0
+S1 3 4 on 0 switch off
+c2 4 0 11000u ic=0
+Rb 4 0 500k
+
+R10 on 10 100
+#R11 on 11 100
+VS 10 0 PULSE(0 3.3 0 0 0 0.0035 0.01)
+#VF 11 0 PULSE(0 3.3 10 0 0 0.01 0.01)
+#VP on 0 0
+
+.model 1N4004 D( IS=76.9p RS=42.0m BV=400.0 IBV=5.00u CJO=39.8p M=0.333 N=1.45 TT=4.32u )
+.model switch SW(Ron=.1 Roff=1Meg Vt=1.5 Vh=0 Lser=10n Vser=.6)
+.tran .0001 60 uic
+.end

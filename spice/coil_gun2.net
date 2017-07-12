@@ -1,0 +1,149 @@
+#Coil gun design
+V1 1 0 SIN(0 120 60)
+
+R1 1 2 100
+R2 2 3 100
+
+C1 3 4 4.7u
+D1 0 4 1N4004
+C2 0 5 4.7u
+D2 4 5 1N4004
+C3 4 6 1u
+D3 5 6 1N4004
+C4 5 7 1u
+D4 6 30 1N4004
+
+# Coil Charge
+C5 7 0 5900u ic=450
+
+#Firing Circuit
+V2 11 0 10
+R3 11 12 10
+X1 7 10 8 MCR703AT4
+#Q1 10 20 10 PNP
+#Q2 20 10 8 NPN
+#R5 8 10 100
+
+#Voltage measurement circuit
+R5 7 20 89000
+R6 20 0 1000
+
+S1 10 12 on 0 MySwitch
+
+#Coil
+L1 8 9 49u
+R4 9 0 0.219
+
+.model MySwitch SW(Ron=.1 Roff=1Meg Vt=1 Vh=0 Lser=10n Vser=.6)
+
+VS on 0 PULSE(0 10 0.01)
+
+.tran .001 0.02 uic
+
+.model PNP PNP(bf=1200)
+.model NPN NPN(bf=1200)
+
+* 1N4004 - 1A 400V General Purpose Rectifier
+* -----------------------------------------------
+.MODEL  1N4004  D
++ IS = 3.699E-09
++ RS = 1.756E-02
++ N = 1.774
++ XTI = 3.0
++ EG = 1.110
++ CJO = 1.732E-11
++ M = 0.3353
++ VJ = 0.3905
++ FC = 0.5
++ ISR = 6.665E-10
++ NR = 2.103
++ BV = 400
++ IBV = 1.0E-03
+
+.SUBCKT MCR703AT4 anode gate cathode PARAMS:
++ Vdrm=500v     Vrrm=500v     Idrm=10u
++ Ih=5ma        dVdt=10e6
++ Igt=25ua      Vgt=0.8v
++ Vtm=2.2v      Itm=8.2
++ Ton=2u        Toff=15u
+
+* Where:
+* Vdrm =>  Forward breakover voltage
+* Vrrm =>  Reverse breakdown voltage
+* Idrm =>  Peak blocking current
+* Ih   =>  Holding current
+* dVdt =>  Critical value for dV/dt triggering
+* Igt  =>  Gate trigger current
+* Vgt  =>  Gate trigger voltage
+* Vtm  =>  On-state voltage
+* Itm  =>  On-state current
+* Ton  =>  Turn-on time
+* Toff =>  Turn-off time
+
+* Main conduction path
+Scr      anode   anode0  control 0       Vswitch ; controlled switch
+Dak1     anode0  anode2  Dakfwd  OFF             ; SCR is initially off
+Dka      cathode anode0  Dkarev  OFF
+VIak     anode2  cathode                         ; current sensor
+
+* dVdt Turn-on
+Emon     dvdt0   0       TABLE {v(anode,cathode)} (0 0) (2000 2000)
+CdVdt    dvdt0   dvdt1   100pfd                  ; displacement current
+Rdlay    dvdt1   dvdt2   1k
+VdVdt    dvdt2   cathode DC 0.0
+EdVdt    condvdt 0       TABLE {i(vdVdt)-100p*dVdt}  (0 0 ) (.1m 10)
+RdVdt    condvdt 0       1meg
+
+* Gate
+Rseries  gate    gate1   {(Vgt-0.65)/Igt}
+Rshunt   gate1   gate2   {0.65/Igt}
+Dgkf     gate1   gate2   Dgk
+VIgf     gate2   cathode                         ; current sensor
+
+* Gate Turn-on
+Egate1   gate4   0       TABLE {i(Vigf)-0.95*Igt} (0 0) (1m 10)
+Rgate1   gate4   0       1meg
+Egon1    congate 0       TABLE {v(gate4)*v(anode,cathode)} (0 0) (10 10)
+Rgon1    congate 0       1meg
+
+* Main Turn-on
+EItot    Itot    0       TABLE {i(VIak)+5E-5*i(VIgf)/Igt} (0 0) (2000 2000)
+RItot    Itot    0       1meg
+Eprod    prod    0       TABLE {v(anode,cathode)*v(Itot)} (0 0) (1 1)
+Rprod    prod    0       1meg
+Elin     conmain 0       TABLE
++        {10*(v(prod) - (Vtm*Ih))/(Vtm*Ih)} (0 0) (2 10)
+Rlin     conmain 0       1meg
+
+* Turn-on/Turn-off control
+Eonoff   contot  0       TABLE
++        {v(congate)+v(conmain)+v(condvdt)} (0 0) (10 10)
+
+* Turn-on/Turn-off delays
+Rton    contot  dlay1   825
+Dton    dlay1   control Delay
+Rtoff   contot  dlay2   {290*Toff/Ton}
+Dtoff   control dlay2   Delay
+Cton    control 0       {Ton/454}
+
+* Reverse breakdown
+Dbreak  anode   break1  Dbreak
+Dbreak2 cathode break1  Dseries
+
+* Controlled switch model
+.MODEL Vswitch vswitch
++ (Ron = {(Vtm-0.7)/Itm}, Roff = {Vdrm*Vdrm/(Vtm*Ih)},
++  Von = 5.0,             Voff = 1.5)
+
+* Diodes
+.MODEL  Dgk     D       (Is=1E-16 Cjo=50pf Rs=5)
+.MODEL  Dseries D       (Is=1E-14)
+.MODEL  Delay   D       (Is=1E-12 Cjo=5pf  Rs=0.01)
+.MODEL  Dkarev  D       (Is=1E-10 Cjo=5pf  Rs=0.01)
+.MODEL  Dakfwd  D       (Is=4E-11 Cjo=5pf)
+.MODEL  Dbreak  D       (Ibv=1E-7 Bv={1.1*Vrrm} Cjo=5pf Rs=0.5)
+
+* Allow the gate to float if required
+Rfloat  gate    cathode 1e10
+
+.ENDS

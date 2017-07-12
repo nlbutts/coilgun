@@ -1,0 +1,21 @@
+mydir="./"
+open(mydir .. "coilgun_with_ext_iron.fem")
+mi_saveas(mydir .. "temp.fem")
+mi_seteditmode("group")
+handle = openfile("data.txt","a")
+write(handle, "18mmx10mm ext iron\n")
+closefile(handle)
+for n=0,30 do
+	mi_analyze()
+	mi_loadsolution()
+	mo_groupselectblock(2)
+	fz=mo_blockintegral(19)
+	handle = openfile("data.txt","a")
+	write(handle, fz)
+	write(handle, "\n")
+	closefile(handle)
+	mi_selectgroup(2)
+  	mi_movetranslate(0,1)
+end
+mo_close()
+mi_close()
