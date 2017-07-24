@@ -7,6 +7,7 @@
 [ProblemType] =  axisymmetric
 [Coordinates] =  cartesian
 [ACSolver]    =  0
+[PrevSoln]    =  ""
 [Comment]     =  "Simple coilgun"
 [PointProps]   = 0
 [BdryProps]   = 1

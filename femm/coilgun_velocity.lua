@@ -7,7 +7,7 @@ filename="data.txt"
 startTime=0
 imageFilenameBase="img"
 
-function calculateVelocity(time, current)
+function calculateVelocity(time, current, imageNum)
 	mi_modifycircprop("coil", 1 ,current)
 	mi_seteditmode("group")
 	mi_selectgroup(2)
@@ -18,7 +18,7 @@ function calculateVelocity(time, current)
 	fz=mo_blockintegral(19)
 
     mo_showdensityplot(0, 0, 1, 0, "bmag")
-    imageFileName = imageFilenameBase .. time .. ".bmp"
+    imageFileName = imageFilenameBase .. imageNum .. ".bmp"
     mo_savebitmap(imageFileName)
 
 
@@ -66,8 +66,10 @@ function simulateCurrent(file, name, position, velocity, threshold)
     data = read(input, "*w")
 
     run = 3
+    imageNum = 0
     while (time and (run > 0)) do
-		calculateVelocity(time, data)
+		calculateVelocity(time, data, imageNum)
+        imageNum = imageNum + 1
       time = read(input, "*w")
       data = read(input, "*w")
       if (distance > threshold) then
@@ -84,4 +86,4 @@ end
 mydir="./"
 showconsole()
 handle = openfile(filename, "w")
-simulateCurrent("18AWG_25ID_45mm_long.fem", "-10mm\n", -10, 0, .035)
+simulateCurrent("18AWG_25ID_45mm_long.fem", "-10mm\n", -10, 0, .5)
