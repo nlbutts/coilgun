@@ -192,4 +192,6 @@ Text Label 6500 3550 0    60   ~ 0
 CPU_CAP_SW_3
 Text Label 6150 4500 0    60   ~ 0
 CPU_BOOST_CHARGE
+Text Notes 3150 5000 0    60   ~ 0
+5V regulator, processor, isolation???
 $EndSCHEMATC
